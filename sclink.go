@@ -58,7 +58,7 @@ func main() {
 	slacktoken := flag.String("stoken", "", "slack xoxb-access-token")
 	flag.Parse()
 
-	if *url == "" || *wikitoken == "" || *path == "" {
+	if *url == "" || *wikitoken == "" || *path == "" || *slacktoken == "" {
 		log.Fatal("Error required -url, -wtoken, -path, -stoken")
 	}
 
@@ -72,19 +72,19 @@ func main() {
 
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
-		case *slack.MessageEvent:
+		case *slack.MessageEvent: // when mention
 			if ev.Type == "message" {
 				log.Printf("Message: %v\n", ev.Text)
-				linkindex := strings.Index(ev.Text, "<@U7NGFCBNX>")
-				if linkindex == -1 { // not mention
+				linkindex := strings.Index(ev.Text, "<@U7NGFCBNX>") //@link
+				if linkindex == -1 {                                // not mention
 					continue
 				}
 				text := ev.Text[linkindex+12:]
 				text = text[:strings.Index(text, "\n")]
-				if text == "" {
+				if text == "" { // empty message
 					continue
 				}
-				if err := WikiUpdate(text, *url, *wikitoken, *path); err != nil {
+				if err := WikiUpdate(text, *url, *wikitoken, *path); err != nil { // update crowi pages
 					log.Println(err)
 				}
 			}
